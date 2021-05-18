@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:palestine_filter/models/filter_presets.dart';
 import 'package:palestine_filter/shared/constants.dart';
 import 'package:palestine_filter/utils/capture.dart';
-import 'package:palestine_filter/utils/color_filter.dart';
+import 'package:palestine_filter/widgets/circular_icon.dart';
+import 'package:palestine_filter/widgets/image_filter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -86,20 +88,31 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+          // BLUR
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: Container(
+                color: Colors.white.withAlpha(1),
+              ),
+            ),
+          ),
           // BODY
           Center(
             child: SafeArea(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const SizedBox(height: 32.0),
                   // title
-                  Text(
-                    widget.title,
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32.0),
+                    child: Text(
+                      widget.title,
+                      style: Theme.of(context).textTheme.headline5.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
                   ),
                   // subtitle
                   Padding(
@@ -144,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(16.0),
                         child: CaptureWidget(
                           key: _captureKey,
-                          capture: imageFilter(
+                          capture: CustomImageFilter(
                             hue: sliderValue,
                             child: Image.file(
                               imgFile,
@@ -153,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               colorBlendMode: filterPresets[currentFilter].blendMode,
                             ),
                           ),
-                          child: imageFilter(
+                          child: CustomImageFilter(
                             hue: sliderValue,
                             child: Image.file(
                               imgFile,
@@ -165,51 +178,111 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (imgFile != null)
-                        IconButton(
-                          tooltip: "Clear",
-                          icon: Icon(Icons.close, color: Colors.white),
-                          onPressed: () {
-                            setState(() {
-                              imgFile = null;
-                              currentFilter = 0;
-                            });
+                  // Filters
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // BUTTON: CLEAR
+                        if (imgFile != null)
+                          IconButton(
+                            tooltip: "Clear",
+                            icon: Icon(Icons.close, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                imgFile = null;
+                                currentFilter = 0;
+                              });
+                            },
+                          ),
+                        // BUTTONS: FILTERS
+                        if (imgFile != null) ...[
+                          IconButton(
+                            tooltip: "Normal",
+                            icon: Icon(
+                              currentFilter == 0 ? Icons.check_circle_outline_rounded : Icons.circle,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                currentFilter = 0;
+                              });
+                            },
+                          ),
+                          IconButton(
+                            tooltip: "Filter 1",
+                            icon: Icon(
+                              currentFilter == 1 ? Icons.check_circle_outline_rounded : Icons.circle,
+                              color: Colors.red,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                currentFilter = 1;
+                              });
+                            },
+                          ),
+                          IconButton(
+                            tooltip: "Filter 2",
+                            icon: Icon(
+                              currentFilter == 2 ? Icons.check_circle_outline_rounded : Icons.circle,
+                              color: Colors.red[900],
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                currentFilter = 2;
+                              });
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // Row of buttons
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // twitter
+                        CircularIcon(
+                          tooltip: "twitter",
+                          backgroundColor: Colors.blue,
+                          iconData: CommunityMaterialIcons.twitter,
+                          onTap: () async {
+                            final urlString = "https://www.twitter.com/DevYahia/";
+                            if (await canLaunch(urlString)) {
+                              launch(urlString);
+                            }
                           },
                         ),
-                      if (imgFile != null) ...[
-                        IconButton(
-                          tooltip: "Normal",
-                          icon: Icon(Icons.circle, color: Colors.grey),
-                          onPressed: () {
-                            setState(() {
-                              currentFilter = 0;
-                            });
+                        const SizedBox(width: 16.0),
+                        // my website
+                        CircularIcon(
+                          tooltip: "My Website",
+                          backgroundColor: Colors.black,
+                          iconData: CommunityMaterialIcons.link,
+                          onTap: () async {
+                            final urlString = "https://www.devyahia.com/";
+                            if (await canLaunch(urlString)) {
+                              launch(urlString, forceWebView: true);
+                            }
                           },
                         ),
-                        IconButton(
-                          tooltip: "Filter 1",
-                          icon: Icon(Icons.circle, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              currentFilter = 1;
-                            });
-                          },
-                        ),
-                        IconButton(
-                          tooltip: "Filter 2",
-                          icon: Icon(Icons.circle, color: Colors.red[900]),
-                          onPressed: () {
-                            setState(() {
-                              currentFilter = 2;
-                            });
+                        const SizedBox(width: 16.0),
+                        // share
+                        CircularIcon(
+                          tooltip: "Share",
+                          backgroundColor: Colors.green,
+                          iconData: CommunityMaterialIcons.share_variant,
+                          onTap: () async {
+                            Share.share(
+                              "apply Palestine Filter to your images through this app:\nios: $IOS_LINK\nandroid: $ANDROID_LINK",
+                            );
                           },
                         ),
                       ],
-                    ],
+                    ),
                   ),
                   // space
                   Spacer(),
@@ -218,85 +291,16 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          //
-          Positioned(
-            bottom: 100.0,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: IconButton(
-                    tooltip: "twitter",
-                    icon: Icon(CommunityMaterialIcons.twitter, color: Colors.white),
-                    onPressed: () async {
-                      final urlString = "https://www.twitter.com/DevYahia/";
-                      if (await canLaunch(urlString)) {
-                        launch(urlString);
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                CircleAvatar(
-                  backgroundColor: Colors.black,
-                  child: IconButton(
-                    tooltip: "My Website",
-                    icon: Icon(CommunityMaterialIcons.link, color: Colors.white),
-                    onPressed: () async {
-                      final urlString = "https://www.devyahia.com/";
-                      if (await canLaunch(urlString)) {
-                        launch(urlString, forceWebView: true);
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                CircleAvatar(
-                  backgroundColor: Colors.green,
-                  child: IconButton(
-                    tooltip: "Share",
-                    icon: Icon(CommunityMaterialIcons.share_variant, color: Colors.white),
-                    onPressed: () async {
-                      Share.share(
-                        "apply Palestine Filter to your images through this app:\nios: $IOS_LINK\nandroid: $ANDROID_LINK",
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: imgFile == null
           ? null
-          : FloatingActionButton.extended(
+          : FloatingActionButton(
               onPressed: _onCapturePressed,
               tooltip: 'Save',
-              label: Text('Save'),
-              icon: Icon(Icons.save),
+              child: Icon(Icons.save),
             ),
     );
-  }
-
-  Widget imageFilter({brightness = 0.0, saturation = 0.0, hue, child}) {
-    return ColorFiltered(
-        colorFilter: ColorFilter.matrix(ColorFilterGenerator.brightnessAdjustMatrix(
-          value: brightness,
-        )),
-        child: ColorFiltered(
-            colorFilter: ColorFilter.matrix(ColorFilterGenerator.saturationAdjustMatrix(
-              value: saturation,
-            )),
-            child: ColorFiltered(
-              colorFilter: ColorFilter.matrix(ColorFilterGenerator.hueAdjustMatrix(
-                value: hue,
-              )),
-              child: child,
-            )));
   }
 }
