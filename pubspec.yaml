@@ -1,0 +1,42 @@
+name: palestine_filter
+description: Apply Palestine Filter to Your Images.
+
+version: 1.0.0+6
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # images
+  image_picker: ^0.7.4
+  image_gallery_saver: '^1.6.9'
+  permission_handler: ^7.1.0
+  # misc
+  fluttertoast: ^8.0.6
+  url_launcher: ^6.0.3
+  share: ^2.0.1
+  # icons
+  cupertino_icons: ^1.0.2
+  community_material_icon: ^5.9.55
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.9.0
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/palestine-icon.jpg"
+
+flutter:
+  uses-material-design: true
+
+  assets: 
+    - assets/
+
+
+
+
